@@ -9,21 +9,22 @@ import java.io.*;
 import java.util.*;
 
 public class OpenCVExtraction {
+  private Map<String, double[]> distanceplotMap = new HashMap<>();////
   public Map<String, double[]> getDistances(String queryImagesPath) {
     long startTime = System.currentTimeMillis();
-    String databaseImagesPath = "../static/database_video_images";
+    String databaseImagesPath = "/Users/wujiachen/Desktop/zhuzai/576project/MovieQuery/static/database_video_images";
     Mat[] queryDescriptors = new Mat[150];
     File queryImagesFolder = new File(queryImagesPath);
     for (File imageFile: queryImagesFolder.listFiles()) {
       String[] parts = imageFile.getName().split("\\.");
       if (!parts[1].equals("jpg")) continue;
-      getDescriptors(imageFile, queryDescriptors);
+      getDescriptors(imageFile, queryDescriptors);//get descriptor of imageFile(n) to queryDescriptors[n]
     }
     System.out.println("--------query extracted, time: " + ((System.currentTimeMillis() - startTime) / 1000.0) + "--------");
 
     Map<String, Mat[]> databaseDescriptorMap = new HashMap<>();
     File databaseImagesFolder = new File(databaseImagesPath);
-    for (File folder: databaseImagesFolder.listFiles()) {
+    for (File folder: databaseImagesFolder.listFiles()) {//databaseDescriptorMap: {folder name: flower, [descriptor of flower_1, descriptor of flower_2, descriptor of flower_3, ...]  }
       if (!folder.isDirectory()) continue;
       String folderName = folder.getName();
       databaseDescriptorMap.put(folderName, new Mat[600]);
@@ -42,10 +43,11 @@ public class OpenCVExtraction {
       int minStartIndex = 0;
       Mat[] databaseDescriptors = databaseDescriptorMap.get(folderName);
       List<Mat> window = new ArrayList<>();
-      for (int i = 0; i < 150; i++) {
+      for (int i = 0; i < 150; i++) {//window[n]: databaseDescriptors[n](the descriptor of flower_1 in flower folder)
         window.add(databaseDescriptors[i]);
       }
-      for (int i = 150; i <= 600; i++) {
+      double[] distanceplot = new double[451];
+      for (int i = 150; i <= 600; i++) {//
         double clipDistanceSum = 0;
         for (int j = 0; j < 150; j++) {
           MatOfDMatch matches = new MatOfDMatch();
@@ -58,6 +60,8 @@ public class OpenCVExtraction {
           clipDistanceSum += (matchArr.length == 0 ? 0 : imageDistanceSum / matchArr.length);
         }
         double avgDistance = clipDistanceSum / 150;
+        
+       distanceplot[i-150] = avgDistance;////
         if (avgDistance < minDistance) {
           minDistance = avgDistance;
           minStartIndex = i - 150;
@@ -67,11 +71,17 @@ public class OpenCVExtraction {
         window.remove(0);
       }
       distanceMap.put(folderName, new double[] { minDistance, minStartIndex});
+      distanceplotMap.put(folderName, distanceplot);
     }
+    
     return distanceMap;
   }
+  
+  public Map<String, double[]> getDistancesPlot() {
+	  return distanceplotMap;
+  }
 
-  private void getDescriptors(File imageFile, Mat[] descriptorsArr) {
+  private void getDescriptors(File imageFile, Mat[] descriptorsArr) {//e.g. in flower folder: descriptor[n] = descriptors of flower_n
     Mat image = Imgcodecs.imread(imageFile.getPath(), Imgcodecs.IMREAD_LOAD_GDAL);
     MatOfKeyPoint keyPoints = new MatOfKeyPoint();
     SIFT detector = SIFT.create(10);
