@@ -38,11 +38,8 @@ import javax.swing.border.Border;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import org.jfree.ui.RefineryUtilities;
 import org.opencv.core.Core;
-import java.io.*;
 import java.util.*;
-import org.opencv.core.Mat;
 
 public class MovieQuery {
 
@@ -62,7 +59,7 @@ public class MovieQuery {
 	private long dataBaseClipTime = 0;
 	private Clip queryClip;
 	private Clip[] dataBaseClips = new Clip[3];
-	private String[][] optimalMovies = new String[3][2];
+	private String[][] optimalMovies = new String[3][4];
 	private JLabel charLabel;
 
 	/**
@@ -115,16 +112,31 @@ public class MovieQuery {
 				if (result == JFileChooser.APPROVE_OPTION) {
 					File queryVideoFolder = fileChooser.getSelectedFile();
 					String queryImagesPath = "./static/query_images_" + queryVideoFolder.getName();
+					String queryAudioPath = queryVideoFolder.getPath() + "/" + queryVideoFolder.getName() + ".wav";
 				    RGBToImage converter = new RGBToImage();
 				    String dataBaseImagesPath = "./static/database_video_images";
 				    String dataBaseVideosPath = "./static/database_videos";
+				    String dataBaseAudioDir = "./static/database_videos/";
 				    OpenCVExtraction extractor = new OpenCVExtraction();
+				    AudioSimilarity audioCompiler = new AudioSimilarity();
 				    
 				    converter.convert(queryVideoFolder.getPath(), queryImagesPath);
 				    System.out.println(queryImagesPath);
 				    Map<String, double[]> distanceMap = extractor.getDistances(queryImagesPath);
+				    Map<String, double[]> featureDistancesMap = extractor.getAllDistances();
+				    Map<String, int[]> indexesMap = extractor.getTop10Indexes();
 				    String[] optimalImagePaths = new String[3];
 				    String[] optimalVideoPaths = new String[3];
+				    
+				    /*
+				    for (String folderName: indexesMap.keySet()) {
+				      int[] indexes = indexesMap.get(folderName);
+				      double[] featureDistances = featureDistancesMap.get(folderName);
+				      System.out.println(folderName + ": ");
+				      for (int i = 0; i < 10; i++) {
+				    	  System.out.println(indexes[i]+", "+featureDistances[indexes[i]]);
+				      }
+				    }*/
 				    
 				    List<Map.Entry<String, double[]>> entries = new ArrayList<>();
 				    for (Map.Entry<String, double[]> entry: distanceMap.entrySet()) {
@@ -136,19 +148,58 @@ public class MovieQuery {
 				    		return (int)(entry1.getValue()[0] - entry2.getValue()[0]);
 				    	}
 				    });
-				    for (int i = 0; i < 3; i++) {
+				    // Get top 5 candidates videos and calculate audio similarity for their top 10 indexes 
+				    Map<String, double[]> finalDistanceMap = new HashMap<>();
+				    for (int i = 0; i < 5; i++) {
 				    	String name = entries.get(i).getKey();
-				    	double[] pair = distanceMap.get(name);
-				    	optimalImagePaths[i] =  dataBaseImagesPath + "/" + name;
+				    	String baseAudioPath = dataBaseAudioDir + name + "/" + name + ".wav";
+				    	int[] indexes = indexesMap.get(name);
+				    	double[] featureDistances = featureDistancesMap.get(name);
+				    	try {
+							double[] audioSim = audioCompiler.getSimilarity(queryAudioPath, baseAudioPath, indexes);
+							double minDistance = Integer.MAX_VALUE;
+							double minFeatureDistance = 0, minAudioDistance = 0;
+						    int minStartIndex = 0;
+							for (int j = 0; j < indexes.length; j++) {
+					    		double combinedDistance = (1.0-audioSim[j]) * featureDistances[indexes[j]];
+					    		if (combinedDistance < minDistance) {
+					    			minDistance = combinedDistance;
+					    			minFeatureDistance = featureDistances[indexes[j]];
+					    			minAudioDistance = 1.0 - audioSim[j];
+					    			minStartIndex = indexes[j];
+					    		}
+					    	}
+							finalDistanceMap.put(name, new double[] { minDistance, minStartIndex, minFeatureDistance, minAudioDistance});
+						} catch (UnsupportedAudioFileException | IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				    }
+				    List<Map.Entry<String, double[]>> finalEntries = new ArrayList<>();
+				    for (Map.Entry<String, double[]> entry: finalDistanceMap.entrySet()) {
+				    	finalEntries.add(entry);
+				    }
+				    Collections.sort(finalEntries, new Comparator<Map.Entry<String, double[]>>() {
+				    	@Override
+				    	public int compare(Map.Entry<String, double[]> entry1, Map.Entry<String, double[]> entry2) {
+				    		return (int)(entry1.getValue()[0] - entry2.getValue()[0]);
+				    	}
+				    });
+				    for (int i = 0; i < 3; i++) {
+				    	String name = finalEntries.get(i).getKey();
+				    	double[] pair = finalDistanceMap.get(name);
+				    	optimalImagePaths[i] = dataBaseImagesPath + "/" + name;
 				    	optimalVideoPaths[i] = dataBaseVideosPath + "/" + name;
 				    	startIndexes[i] = (int)pair[1];
 				    	table.setValueAt(name, i, 0);
 				    	table.setValueAt(String.valueOf((int)pair[0]), i, 1);
+				    	table.setValueAt(String.valueOf((int)pair[2]), i, 2);
+				    	table.setValueAt(String.valueOf(pair[3]), i, 3);
 				    }
 				   
 				    
 				    Plot chart = new Plot("Measurement of similarity",
-				            "Similarity between different parts of two video", extractor.getDistancesPlot(), charLabel);
+				            "Similarity between different parts of two video", extractor.getAllDistances(), charLabel);
 				    chart.pack( );          
 //				    RefineryUtilities.centerFrameOnScreen( chart );          
 //				    chart.setVisible( true ); 
@@ -189,8 +240,8 @@ public class MovieQuery {
 				    	dataBaseClips[currentVideoIndex].setMicrosecondPosition(dataBaseClipTime);  
 				        frame.setVisible(true);
 				        
-				        String audioPath = "./static/query_videos/first/first.wav";
-				        AudioInputStream queryStream = AudioSystem.getAudioInputStream(new File(audioPath));
+				        //String audioPath = "./static/query_vidoes/" + queryVideoFolder.getName() + "/" + queryVideoFolder.getName() + ".wav";
+				        AudioInputStream queryStream = AudioSystem.getAudioInputStream(new File(queryAudioPath));
 				        AudioFormat queryFormat = queryStream.getFormat();
 				        DataLine.Info queryInfo = new DataLine.Info(Clip.class, queryFormat);
 				        queryClip = (Clip) AudioSystem.getLine(queryInfo);
@@ -206,11 +257,11 @@ public class MovieQuery {
 				}
 			}
 		});
-		btnNewButton.setBounds(32, 53, 117, 29);
+		btnNewButton.setBounds(131, 91, 117, 29);
 		frame.getContentPane().add(btnNewButton);
 		
 		//add table for 3 most similar movies in the database
-		String[] columns = {"Movie Name", "Similarity"};
+		String[] columns = {"Movie Name", "Mixed Dist", "Feature Dist", "Audio Dist"};
 		table = new JTable(optimalMovies, columns);
 		table.setDefaultEditor(Object.class, null);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -234,7 +285,7 @@ public class MovieQuery {
 		    }
 		});
         JScrollPane srollPane = new JScrollPane(table); 
-        srollPane.setBounds(193, 37, 177, 106);
+        srollPane.setBounds(64, 176, 300, 150);
         frame.getContentPane().add(srollPane);
         
         JButton queryPlayButton = new JButton("Play");
