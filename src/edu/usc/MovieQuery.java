@@ -63,6 +63,7 @@ public class MovieQuery {
 	private Clip queryClip;
 	private Clip[] dataBaseClips = new Clip[3];
 	private String[][] optimalMovies = new String[3][2];
+	private JLabel charLabel;
 
 	/**
 	 * Launch the application.
@@ -93,7 +94,7 @@ public class MovieQuery {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 800, 650);
+		frame.setBounds(100, 100, 900, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
@@ -146,9 +147,9 @@ public class MovieQuery {
 				    }
 				   
 				    
-//				    Plot chart = new Plot("Measurement of similarity",
-//				            "Similarity between different parts of two video",extractor.getDistancesPlot() );
-//				    chart.pack( );          
+				    Plot chart = new Plot("Measurement of similarity",
+				            "Similarity between different parts of two video", extractor.getDistancesPlot(), charLabel);
+				    chart.pack( );          
 //				    RefineryUtilities.centerFrameOnScreen( chart );          
 //				    chart.setVisible( true ); 
 					
@@ -205,7 +206,7 @@ public class MovieQuery {
 				}
 			}
 		});
-		btnNewButton.setBounds(154, 47, 117, 29);
+		btnNewButton.setBounds(32, 53, 117, 29);
 		frame.getContentPane().add(btnNewButton);
 		
 		//add table for 3 most similar movies in the database
@@ -233,7 +234,7 @@ public class MovieQuery {
 		    }
 		});
         JScrollPane srollPane = new JScrollPane(table); 
-        srollPane.setBounds(514, 21, 177, 106);
+        srollPane.setBounds(193, 37, 177, 106);
         frame.getContentPane().add(srollPane);
         
         JButton queryPlayButton = new JButton("Play");
@@ -262,7 +263,7 @@ public class MovieQuery {
 			    }
         	}
         });
-        queryPlayButton.setBounds(32, 565, 90, 29);
+        queryPlayButton.setBounds(60, 699, 90, 29);
         frame.getContentPane().add(queryPlayButton);
         
         JButton queryPauseButton = new JButton("Pause");
@@ -280,7 +281,7 @@ public class MovieQuery {
         		}
         	}
         });
-        queryPauseButton.setBounds(161, 565, 90, 29);
+        queryPauseButton.setBounds(186, 699, 90, 29);
         frame.getContentPane().add(queryPauseButton);
         
         JButton queryStopButton = new JButton("Stop");
@@ -305,7 +306,7 @@ public class MovieQuery {
         		}
         	}
         });
-        queryStopButton.setBounds(284, 565, 90, 29);
+        queryStopButton.setBounds(305, 699, 90, 29);
         frame.getContentPane().add(queryStopButton);
 
         JButton dataBasePlayButton = new JButton("Play");
@@ -335,7 +336,7 @@ public class MovieQuery {
 			    }
         	}
         });
-        dataBasePlayButton.setBounds(422, 565, 90, 29);
+        dataBasePlayButton.setBounds(511, 699, 90, 29);
         frame.getContentPane().add(dataBasePlayButton);
         
         JButton dataBasePauseButton = new JButton("Pause");
@@ -349,7 +350,7 @@ public class MovieQuery {
         		}
         	}
         });
-        dataBasePauseButton.setBounds(547, 565, 90, 29);
+        dataBasePauseButton.setBounds(636, 699, 90, 29);
         frame.getContentPane().add(dataBasePauseButton);
         
         JButton dataBaseStopButton = new JButton("Stop");
@@ -375,15 +376,15 @@ public class MovieQuery {
         		}
         	}
         });
-        dataBaseStopButton.setBounds(670, 565, 90, 29);
+        dataBaseStopButton.setBounds(756, 699, 90, 29);
         frame.getContentPane().add(dataBaseStopButton);
         
         Border border = BorderFactory.createLineBorder(Color.GRAY, 1);
         label1.setHorizontalAlignment(SwingConstants.CENTER);
-        label1.setBounds(38, 254, 335, 288);
+        label1.setBounds(60, 378, 335, 288);
         label1.setBorder(border);
         label2.setHorizontalAlignment(SwingConstants.CENTER);
-        label2.setBounds(425, 254, 335, 288);
+        label2.setBounds(511, 378, 335, 288);
         label2.setBorder(border);
         frame.getContentPane().add(label1);
         frame.getContentPane().add(label2);
@@ -408,9 +409,15 @@ public class MovieQuery {
         	}
         });
         
-        slider.setBounds(417, 213, 355, 29);
+        slider.setBounds(501, 337, 355, 29);
         slider.setValue(1);
         frame.getContentPane().add(slider);    
+        
+        charLabel = new JLabel("Similarity Chart");
+        charLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        charLabel.setBounds(454, 25, 330, 300);
+        charLabel.setBorder(border);
+        frame.getContentPane().add(charLabel);
 	}
 	
 	private int getNumFromStr(String s) {

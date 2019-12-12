@@ -2,6 +2,9 @@ package edu.usc;
 
 import java.awt.Color;
 import java.util.*;
+
+import javax.swing.JLabel;
+
 import java.awt.BasicStroke; 
 
 import org.jfree.chart.ChartPanel; 
@@ -22,7 +25,7 @@ public class Plot extends ApplicationFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-public Plot( String applicationTitle, String chartTitle, Map<String, double[]> distance) {
+public Plot( String applicationTitle, String chartTitle, Map<String, double[]> distance, JLabel jLabel) {
       super(applicationTitle);
       JFreeChart xylineChart = ChartFactory.createXYLineChart(
          chartTitle ,
@@ -33,7 +36,7 @@ public Plot( String applicationTitle, String chartTitle, Map<String, double[]> d
          true , true , false);
          
       ChartPanel chartPanel = new ChartPanel( xylineChart );
-      chartPanel.setPreferredSize( new java.awt.Dimension( 560 , 367 ) );
+      chartPanel.setPreferredSize( new java.awt.Dimension( 330 , 300 ) );
       final XYPlot plot = xylineChart.getXYPlot( );
       
       XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer( );
@@ -41,6 +44,7 @@ public Plot( String applicationTitle, String chartTitle, Map<String, double[]> d
       renderer.setSeriesStroke( 0 , new BasicStroke( 1.0f ) );
       plot.setRenderer( renderer ); 
       setContentPane( chartPanel ); 
+      jLabel.add(chartPanel);
    }
    
    private XYDataset createDataset(Map<String, double[]> distance) {
