@@ -128,16 +128,6 @@ public class MovieQuery {
 				    String[] optimalImagePaths = new String[3];
 				    String[] optimalVideoPaths = new String[3];
 				    
-				    /*
-				    for (String folderName: indexesMap.keySet()) {
-				      int[] indexes = indexesMap.get(folderName);
-				      double[] featureDistances = featureDistancesMap.get(folderName);
-				      System.out.println(folderName + ": ");
-				      for (int i = 0; i < 10; i++) {
-				    	  System.out.println(indexes[i]+", "+featureDistances[indexes[i]]);
-				      }
-				    }*/
-				    
 				    List<Map.Entry<String, double[]>> entries = new ArrayList<>();
 				    for (Map.Entry<String, double[]> entry: distanceMap.entrySet()) {
 				    	entries.add(entry);
@@ -185,6 +175,7 @@ public class MovieQuery {
 				    		return (int)(entry1.getValue()[0] - entry2.getValue()[0]);
 				    	}
 				    });
+				    
 				    for (int i = 0; i < 3; i++) {
 				    	String name = finalEntries.get(i).getKey();
 				    	double[] pair = finalDistanceMap.get(name);
@@ -225,7 +216,6 @@ public class MovieQuery {
 							e.printStackTrace();
 						}
 				    }
-				    
 					try {
 						if (queryTimer != null) queryTimer.stop();
 						if (dataBaseTimer != null) dataBaseTimer.stop();
@@ -237,10 +227,9 @@ public class MovieQuery {
 						label2.setIcon(new ImageIcon(image2));
 						slider.setValue(dataBaseImageIndex + 1);
 				    	dataBaseClipTime = (long)(((dataBaseImageIndex + 1)/ 600.0) * dataBaseClips[currentVideoIndex].getMicrosecondLength());
-				    	dataBaseClips[currentVideoIndex].setMicrosecondPosition(dataBaseClipTime);  
+//				    	dataBaseClips[currentVideoIndex].setMicrosecondPosition(dataBaseClipTime);  
 				        frame.setVisible(true);
 				        
-				        //String audioPath = "./static/query_vidoes/" + queryVideoFolder.getName() + "/" + queryVideoFolder.getName() + ".wav";
 				        AudioInputStream queryStream = AudioSystem.getAudioInputStream(new File(queryAudioPath));
 				        AudioFormat queryFormat = queryStream.getFormat();
 				        DataLine.Info queryInfo = new DataLine.Info(Clip.class, queryFormat);
@@ -450,7 +439,6 @@ public class MovieQuery {
     					BufferedImage image = ImageIO.read(dataBaseVideos[currentVideoIndex][dataBaseImageIndex]);
     					label2.setIcon(new ImageIcon(image));
 				    	dataBaseClipTime = (long)((value / 600.0) * dataBaseClips[currentVideoIndex].getMicrosecondLength());
-				    	dataBaseClips[currentVideoIndex].setMicrosecondPosition(dataBaseClipTime);  
     			        frame.setVisible(true);
     				} catch (IOException e) {
     					e.printStackTrace();
