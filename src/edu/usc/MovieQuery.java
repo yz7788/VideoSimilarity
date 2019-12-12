@@ -59,8 +59,10 @@ public class MovieQuery {
 	private long dataBaseClipTime = 0;
 	private Clip queryClip;
 	private Clip[] dataBaseClips = new Clip[3];
-	private String[][] optimalMovies = new String[3][4];
+	private String[][] optimalMovies = new String[3][5];
 	private JLabel charLabel;
+	private double formularAlpha = 0.8;
+	private double formularFrac = (double) 1/2;
 
 	/**
 	 * Launch the application.
@@ -138,28 +140,36 @@ public class MovieQuery {
 				    		return (int)(entry1.getValue()[0] - entry2.getValue()[0]);
 				    	}
 				    });
-				    // Get top 5 candidates videos and calculate audio similarity for their top 10 indexes 
+				    // Get top 5 candidates videos and calculate audio similarity and color distance for their top 10 indexes 
 				    Map<String, double[]> finalDistanceMap = new HashMap<>();
+				    ColorInfoCompiler colorComp = new ColorInfoCompiler(queryVideoFolder);
 				    for (int i = 0; i < 5; i++) {
 				    	String name = entries.get(i).getKey();
 				    	String baseAudioPath = dataBaseAudioDir + name + "/" + name + ".wav";
 				    	int[] indexes = indexesMap.get(name);
 				    	double[] featureDistances = featureDistancesMap.get(name);
 				    	try {
+				    		//get color distances
+				    		String baseColorFilePath = "./static/database_video_color/" + name + ".csv";
+				    		double[] colorDistances = colorComp.getDistances(baseColorFilePath, indexes);
 							double[] audioSim = audioCompiler.getSimilarity(queryAudioPath, baseAudioPath, indexes);
 							double minDistance = Integer.MAX_VALUE;
-							double minFeatureDistance = 0, minAudioDistance = 0;
+							double minFeatureDistance = 0, minAudioDistance = 0, minColorDistance = 0;
+							double frac = (double) 1/2;
+							double alpha = 0.8;
 						    int minStartIndex = 0;
 							for (int j = 0; j < indexes.length; j++) {
-					    		double combinedDistance = (1.0-audioSim[j]) * featureDistances[indexes[j]];
+								double ratio = Math.pow(1.0-audioSim[j], frac);
+					    		double combinedDistance = ratio*(alpha*featureDistances[indexes[j]]+(1.0-alpha)*colorDistances[j]);
 					    		if (combinedDistance < minDistance) {
 					    			minDistance = combinedDistance;
 					    			minFeatureDistance = featureDistances[indexes[j]];
 					    			minAudioDistance = 1.0 - audioSim[j];
+					    			minColorDistance = colorDistances[j];
 					    			minStartIndex = indexes[j];
 					    		}
 					    	}
-							finalDistanceMap.put(name, new double[] { minDistance, minStartIndex, minFeatureDistance, minAudioDistance});
+							finalDistanceMap.put(name, new double[] { minDistance, minStartIndex, minFeatureDistance, minAudioDistance, minColorDistance});
 						} catch (UnsupportedAudioFileException | IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -186,11 +196,11 @@ public class MovieQuery {
 				    	table.setValueAt(String.valueOf((int)pair[0]), i, 1);
 				    	table.setValueAt(String.valueOf((int)pair[2]), i, 2);
 				    	table.setValueAt(String.valueOf(pair[3]), i, 3);
+				    	table.setValueAt(String.valueOf(pair[4]), i, 4);
 				    }
 				   
 				    
-				    Plot chart = new Plot("Measurement of similarity",
-				            "Similarity between different parts of two video", extractor.getAllDistances(), charLabel);
+				    Plot chart = new Plot("Feature Distance", "Feature Distances Between Query Video and Database Videos", extractor.getAllDistances(), charLabel);
 				    chart.pack( );          
 //				    RefineryUtilities.centerFrameOnScreen( chart );          
 //				    chart.setVisible( true ); 
@@ -250,7 +260,7 @@ public class MovieQuery {
 		frame.getContentPane().add(btnNewButton);
 		
 		//add table for 3 most similar movies in the database
-		String[] columns = {"Movie Name", "Mixed Dist", "Feature Dist", "Audio Dist"};
+		String[] columns = {"Movie Name", "Mixed Dist", "Feature Dist", "Audio Dist", "Color Dist"};
 		table = new JTable(optimalMovies, columns);
 		table.setDefaultEditor(Object.class, null);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

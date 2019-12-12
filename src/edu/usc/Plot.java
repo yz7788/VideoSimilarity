@@ -42,6 +42,7 @@ public Plot( String applicationTitle, String chartTitle, Map<String, double[]> d
       XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer( );
       renderer.setSeriesPaint( 0 , Color.RED );
       renderer.setSeriesStroke( 0 , new BasicStroke( 1.0f ) );
+      renderer.setBaseShapesVisible(false);
       plot.setRenderer( renderer ); 
       setContentPane( chartPanel ); 
       jLabel.add(chartPanel);
