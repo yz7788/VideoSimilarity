@@ -1,1 +1,1 @@
-用eclipse打开应该就能运行
+This repository provides code for video similarity check.
