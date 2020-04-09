@@ -15,7 +15,7 @@ This repository provides code for video similarity check. Eclipse project files 
 When the project runs, an UI interface will appears automatically. By clicking the "Select Movie" Botton, user can choose the query movie from file folder. 
 
 <p align="center">
- <img src="VideoSimilarity/figure/UI_interface.jpg" height="600"/>
+ <img src="figure/UI_interface.jpg" height="600"/>
 </p >
 
 Then the project will calculate the final similarity distance, and provide three answers with the lowest score.(The lower the final score, the more similar it means.)
@@ -23,20 +23,20 @@ Then the project will calculate the final similarity distance, and provide three
 Here is an example that query video is exactly the same with one of the database videos clips.
 
 <p align="center">
- <img src="VideoSimilarity/figure/exactmatch.jpg" height="600"/>
+ <img src="figure/exactmatch.jpg" height="600"/>
 </p >
 
 By dragging the progress bar or press "Play" button, the user can control video play. The user can also choose the other two videos shown in the list in the left top to play the video.
 
 
 <p align="center">
- <img src="VideoSimilarity/figure/playmovie.jpg" height="600"/>
+ <img src="figure/playmovie.jpg" height="600"/>
 </p >
 
 Here is an example that query video is exactly the same with one of the database videos clips.
 
 <p align="center">
- <img src="VideoSimilarity/figure/inexactmatch.jpg" height="600"/>
+ <img src="figure/inexactmatch.jpg" height="600"/>
 </p >
 
 
