@@ -11,7 +11,7 @@ The smaller the final score, the more similar it means.
 
 This repository provides code for video similarity check. Eclipse project files is provided. 
 
-## Result & UI Interface
+## Result & User Interface
 When the project runs, an UI interface will appears automatically. By clicking the "Select Movie" Botton, user can choose the query movie from file folder. 
 
 <p align="center">
